@@ -1,9 +1,9 @@
 #!/bin/bash
 
-#SBATCH -J braker_no_rnaseq_hap1
+#SBATCH -J braker_no_rnaseq_hap1_compleasmerrorfix
 #SBATCH -A naiss2025-5-531
-#SBATCH -p memory
-#SBATCH --mem=400GB
+#SBATCH -p shared
+#SBATCH --mem=200GB
 #SBATCH -t 48:00:00
 #SBATCH -o %x.out
 #SBATCH -e %x.err
@@ -17,17 +17,18 @@ module load singularity/4.2.0-cpeGNU-24.11
 
 # set important variables
 BRAKER_DIR=~/BRAKER
-SHARED_DATA_DIR=~/Cardamine_Annotation_Haplomes/Shared_Input_Data
+SHARED_DATA_DIR=~/SharedData
 augustus_config=/cfs/klemming/projects/supr/yantlab_storage/Denzel/BRAKER/augustus_config
 
 ## softmask possible cglacua
 # set shared data, braker, input and output dirs
 GENOMESEQDIR=/cfs/klemming/projects/supr/yantlab_storage/Denzel/Anastatica_hierochuntica/Haplome1/Output/Rmodeler
 genome_name=anastatica_hierochuntica_hap1.softmasked.fa
-species=a_hier1
-OUTPUTDIR=/cfs/klemming/projects/supr/yantlab_storage/Denzel/Anastatica_hierochuntica/Haplome1/Output/BRAKER
+species=anas_hierochunt1
+OUTPUTDIR=~/BRAKER/anastatica_hierochuntica_hap1_nornaseq
 
 # move into shared data dir
+mkdir -p $SHARED_DATA_DIR
 cd $SHARED_DATA_DIR
 
 # get orthodb partition for plants
@@ -97,9 +98,9 @@ singularity exec -B ${PWD}:${PWD} \
 		-B ${SHARED_DATA_DIR}:${SHARED_DATA_DIR} \
 		-B ${augustus_config}:${augustus_config} ${BRAKER_SIF} braker.pl --AUGUSTUS_CONFIG_PATH=${augustus_config} \
 		--genome=$GENOMESEQDIR/$genome_name \
-		--prot_seq $SHARED_DATA_DIR/Viridiplantae.fa --workingdir=${wd} \
+		--prot_seq $SHARED_DATA_DIR/Viridiplantae.fa --workingdir=${wd} --useexisting \
 		--species=$species --gff3 \
-		--threads 8 --busco_lineage brassicales_odb12 &> brakerrun.log
+		--threads 8 --busco_lineage brassicales &> brakerrun_anas_hier_hap1.log
 
 
 
